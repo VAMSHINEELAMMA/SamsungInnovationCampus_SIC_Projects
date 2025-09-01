@@ -82,17 +82,15 @@ export default function FeedbackPage() {
     }
   };
 
-  const downloadFeedback = (groupedFeedback: Record<string, Feedback[]>) => {
+  const downloadSubjectFeedback = (subject: string, feedbacksForSubject: Feedback[]) => {
     let csvContent = "data:text/csv;charset=utf-8,Subject,Rating,Comments\n";
-    for (const subject in groupedFeedback) {
-        groupedFeedback[subject].forEach(f => {
-            csvContent += `${f.subject},${f.experience},"${f.comments.replace(/"/g, '""')}"\n`;
-        });
-    }
+    feedbacksForSubject.forEach(f => {
+        csvContent += `${f.subject},${f.experience},"${f.comments.replace(/"/g, '""')}"\n`;
+    });
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "feedback.csv");
+    link.setAttribute("download", `${subject.replace(/\s+/g, '_')}_feedback.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -181,22 +179,24 @@ export default function FeedbackPage() {
       </TabsContent>
       <TabsContent value="faculty">
          <Card className="mt-6 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle>Student Feedback Submissions</CardTitle>
-                    <CardDescription>Review and analyze feedback submitted by students.</CardDescription>
-                </div>
-                <Button variant="outline" onClick={() => downloadFeedback(groupedFeedback)} disabled={feedbacks.length === 0}>
-                    <FileDown className="mr-2 h-4 w-4"/>
-                    Download All
-                </Button>
+            <CardHeader>
+                <CardTitle>Student Feedback Submissions</CardTitle>
+                <CardDescription>Review, analyze, and download feedback submitted by students, grouped by subject.</CardDescription>
             </CardHeader>
             <CardContent>
                 {feedbacks.length > 0 ? (
                     <Accordion type="single" collapsible className="w-full">
                         {Object.entries(groupedFeedback).map(([subject, feedbacksForSubject]) => (
                             <AccordionItem value={subject} key={subject}>
-                                <AccordionTrigger className="text-lg font-medium">{subject} ({feedbacksForSubject.length})</AccordionTrigger>
+                                <AccordionTrigger>
+                                  <div className="flex justify-between items-center w-full pr-4">
+                                      <span className="text-lg font-medium">{subject} ({feedbacksForSubject.length})</span>
+                                      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); downloadSubjectFeedback(subject, feedbacksForSubject); }} disabled={feedbacksForSubject.length === 0}>
+                                          <FileDown className="mr-2 h-4 w-4"/>
+                                          Download
+                                      </Button>
+                                  </div>
+                                </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="space-y-4">
                                         {feedbacksForSubject.map((feedback, index) => (
