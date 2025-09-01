@@ -57,7 +57,6 @@ type Project = typeof initialProjects[0];
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
@@ -190,8 +189,8 @@ export default function ProjectsPage() {
                             <Image
                               src={project.imageUrl}
                               alt={project.title}
-                              layout="fill"
-                              objectFit="cover"
+                              fill
+                              className="object-cover"
                               data-ai-hint={project.dataAiHint}
                             />
                         </div>
@@ -207,7 +206,7 @@ export default function ProjectsPage() {
                         )}
                         {project.githubUrl && (
                             <Button asChild variant="secondary" className="w-full">
-                                <Link href={project.githubUrl} target="_blank">
+                                <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
                                     <Github className="mr-2 h-4 w-4" />
                                     GitHub
                                 </Link>
@@ -215,7 +214,7 @@ export default function ProjectsPage() {
                         )}
                         {project.linkedinUrl && (
                           <Button asChild variant="secondary" className="w-full">
-                              <Link href={project.linkedinUrl} target="_blank">
+                              <Link href={project.linkedinUrl} target="_blank" rel="noopener noreferrer">
                                   <Linkedin className="mr-2 h-4 w-4" />
                                   LinkedIn
                               </Link>
