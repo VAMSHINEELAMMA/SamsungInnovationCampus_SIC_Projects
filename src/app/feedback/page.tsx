@@ -188,15 +188,15 @@ export default function FeedbackPage() {
                     <Accordion type="single" collapsible className="w-full">
                         {Object.entries(groupedFeedback).map(([subject, feedbacksForSubject]) => (
                             <AccordionItem value={subject} key={subject}>
-                                <AccordionTrigger>
-                                  <div className="flex justify-between items-center w-full pr-4">
-                                      <span className="text-lg font-medium">{subject} ({feedbacksForSubject.length})</span>
-                                      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); downloadSubjectFeedback(subject, feedbacksForSubject); }} disabled={feedbacksForSubject.length === 0}>
-                                          <FileDown className="mr-2 h-4 w-4"/>
-                                          Download
-                                      </Button>
-                                  </div>
-                                </AccordionTrigger>
+                                <div className="flex justify-between items-center w-full pr-4 py-4">
+                                  <AccordionTrigger className="w-full text-lg font-medium text-left p-0 hover:no-underline">
+                                    {subject} ({feedbacksForSubject.length})
+                                  </AccordionTrigger>
+                                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); downloadSubjectFeedback(subject, feedbacksForSubject); }} disabled={feedbacksForSubject.length === 0}>
+                                      <FileDown className="mr-2 h-4 w-4"/>
+                                      Download
+                                  </Button>
+                                </div>
                                 <AccordionContent>
                                     <div className="space-y-4">
                                         {feedbacksForSubject.map((feedback, index) => (
