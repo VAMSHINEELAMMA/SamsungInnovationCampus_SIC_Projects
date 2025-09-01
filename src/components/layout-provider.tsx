@@ -7,16 +7,9 @@ import { AuthLayout } from "./auth-layout";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
+import { navItems } from "@/lib/constants";
 
-const appRoutes = [
-  "/dashboard",
-  "/assessment",
-  "/projects",
-  "/feedback",
-  "/calculator",
-  "/games",
-  "/connect",
-];
+const appRoutes = navItems.map(item => item.href);
 const authRoutes = ["/login", "/signup"];
 
 function InnerLayout({ children }: { children: React.ReactNode }) {
@@ -42,7 +35,10 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (appRoutes.includes(pathname)) {
+  const isAppRoute = appRoutes.some(route => pathname.startsWith(route));
+  const isAuthRoute = authRoutes.includes(pathname);
+
+  if (isAppRoute) {
     return (
       <AppLayout>
         {children}
@@ -51,7 +47,7 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (authRoutes.includes(pathname)) {
+  if (isAuthRoute) {
     return (
       <AuthLayout>
         {children}
