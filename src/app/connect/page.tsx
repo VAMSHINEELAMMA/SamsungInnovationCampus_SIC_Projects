@@ -125,12 +125,12 @@ export default function ConnectPage() {
                           <p className="text-sm">{msg.text}</p>
                           <p className="text-xs text-right opacity-70 mt-1">{msg.timestamp}</p>
                       </div>
-                      {msg.sender === 'user' && <Avatar className="h-8 w-8"><AvatarFallback>{user?.fullName?.[0] || 'U'}</AvatarFallback></Avatar>}
+                      {msg.sender === 'user' && <Avatar className="h-8 w-8"><AvatarFallback>{user?.fullName?.[0]?.toUpperCase() || 'U'}</AvatarFallback></Avatar>}
                    </div>
                 ))}
              </div>
           </ScrollArea>
-          <div className="flex items-center space-x-2 p-6 pt-2">
+          <div className="flex items-center space-x-2 p-6 pt-2 border-t">
             <Input
               placeholder="Type your message..."
               value={currentMessage}
