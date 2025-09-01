@@ -6,30 +6,38 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ThumbsUp, ThumbsDown, Send, FileDown, BrainCircuit, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { analyzeStudentFeedback, AnalyzeFeedbackInput, AnalyzeFeedbackOutput } from "@/ai/flows/analyze-feedback-flow";
 
 type Feedback = {
   subject: string;
-  experience: "Like" | "Dislike" | null;
+  experience: "Like" | "Dislike";
   comments: string;
 };
 
+const initialFeedbacks: Feedback[] = [
+    { subject: 'Calculus Midterm', experience: 'Dislike', comments: 'The midterm was too difficult and the concepts were not covered well in class.' },
+    { subject: 'React Components Lab', experience: 'Like', comments: 'I really enjoyed this lab, it was very practical and helped me understand React better.' },
+    { subject: 'Calculus Midterm', experience: 'Like', comments: 'Challenging but fair. I felt prepared.' },
+];
+
+
 export default function FeedbackPage() {
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>(initialFeedbacks);
   const [subject, setSubject] = useState("");
   const [experience, setExperience] = useState<"Like" | "Dislike" | null>(null);
   const [comments, setComments] = useState("");
   const { toast } = useToast();
+
+  const [analysis, setAnalysis] = useState<AnalyzeFeedbackOutput | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+
 
   const handleSubmit = () => {
     if (!subject || !experience || !comments) {
@@ -54,6 +62,49 @@ export default function FeedbackPage() {
     setExperience(null);
     setComments("");
   };
+
+  const handleAnalyze = async (feedback: Feedback) => {
+    setSelectedFeedback(feedback);
+    setIsAnalyzing(true);
+    setAnalysis(null);
+    try {
+        const result = await analyzeStudentFeedback({
+            subject: feedback.subject,
+            rating: feedback.experience,
+            comments: feedback.comments
+        });
+        setAnalysis(result);
+    } catch (error) {
+        console.error("Analysis failed", error);
+        toast({ variant: "destructive", title: "Analysis Failed" });
+    } finally {
+        setIsAnalyzing(false);
+    }
+  };
+
+  const downloadFeedback = (groupedFeedback: Record<string, Feedback[]>) => {
+    let csvContent = "data:text/csv;charset=utf-8,Subject,Rating,Comments\n";
+    for (const subject in groupedFeedback) {
+        groupedFeedback[subject].forEach(f => {
+            csvContent += `${f.subject},${f.experience},"${f.comments.replace(/"/g, '""')}"\n`;
+        });
+    }
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "feedback.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  const groupedFeedback = feedbacks.reduce((acc, f) => {
+    if (!acc[f.subject]) {
+      acc[f.subject] = [];
+    }
+    acc[f.subject].push(f);
+    return acc;
+  }, {} as Record<string, Feedback[]>);
 
 
   return (
@@ -130,35 +181,79 @@ export default function FeedbackPage() {
       </TabsContent>
       <TabsContent value="faculty">
          <Card className="mt-6 shadow-lg">
-            <CardHeader>
-                <CardTitle>Student Feedback Submissions</CardTitle>
-                <CardDescription>Review feedback submitted by students for courses and assessments.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Student Feedback Submissions</CardTitle>
+                    <CardDescription>Review and analyze feedback submitted by students.</CardDescription>
+                </div>
+                <Button variant="outline" onClick={() => downloadFeedback(groupedFeedback)} disabled={feedbacks.length === 0}>
+                    <FileDown className="mr-2 h-4 w-4"/>
+                    Download All
+                </Button>
             </CardHeader>
             <CardContent>
                 {feedbacks.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                            <TableHead>Subject</TableHead>
-                            <TableHead>Rating</TableHead>
-                            <TableHead>Comment</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {feedbacks.map((feedback, index) => (
-                            <TableRow key={index}>
-                                <TableCell className="font-medium">{feedback.subject}</TableCell>
-                                <TableCell>
-                                    <span className={`flex items-center gap-2 ${feedback.experience === 'Like' ? 'text-green-500' : 'text-red-500'}`}>
-                                        {feedback.experience === 'Like' ? <ThumbsUp className="h-4 w-4"/> : <ThumbsDown className="h-4 w-4"/>}
-                                        {feedback.experience}
-                                    </span>
-                                </TableCell>
-                                <TableCell>{feedback.comments}</TableCell>
-                            </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <Accordion type="single" collapsible className="w-full">
+                        {Object.entries(groupedFeedback).map(([subject, feedbacksForSubject]) => (
+                            <AccordionItem value={subject} key={subject}>
+                                <AccordionTrigger className="text-lg font-medium">{subject} ({feedbacksForSubject.length})</AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="space-y-4">
+                                        {feedbacksForSubject.map((feedback, index) => (
+                                            <div key={index} className="p-4 border rounded-md bg-muted/20 flex items-center justify-between">
+                                                <div>
+                                                    <p className="flex items-center gap-2 font-semibold">
+                                                        Rating:
+                                                        <span className={`flex items-center gap-1 ${feedback.experience === 'Like' ? 'text-green-500' : 'text-red-500'}`}>
+                                                            {feedback.experience === 'Like' ? <ThumbsUp className="h-4 w-4"/> : <ThumbsDown className="h-4 w-4"/>}
+                                                            {feedback.experience}
+                                                        </span>
+                                                    </p>
+                                                    <p className="text-muted-foreground mt-1">"{feedback.comments}"</p>
+                                                </div>
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="secondary" onClick={() => handleAnalyze(feedback)}>
+                                                          <BrainCircuit className="mr-2 h-4 w-4" />
+                                                          View & Analyze
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="sm:max-w-md">
+                                                        <DialogHeader>
+                                                            <DialogTitle>Feedback Analysis</DialogTitle>
+                                                            <DialogDescription>AI-powered suggestions based on student feedback.</DialogDescription>
+                                                        </DialogHeader>
+                                                        {selectedFeedback && (
+                                                            <div className="space-y-4 mt-4">
+                                                              <Card>
+                                                                <CardHeader className="pb-2">
+                                                                  <CardTitle className="text-sm">Original Feedback</CardTitle>
+                                                                </CardHeader>
+                                                                <CardContent>
+                                                                  <p className="text-sm text-muted-foreground"><strong>Rating:</strong> {selectedFeedback.experience}</p>
+                                                                  <p className="text-sm text-muted-foreground mt-1"><strong>Comment:</strong> "{selectedFeedback.comments}"</p>
+                                                                </CardContent>
+                                                              </Card>
+                                                              <Card>
+                                                                <CardHeader className="pb-2">
+                                                                  <CardTitle className="text-sm flex items-center gap-2"><BrainCircuit className="text-primary"/> AI Suggestions</CardTitle>
+                                                                </CardHeader>
+                                                                <CardContent>
+                                                                    {isAnalyzing && <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/>Analyzing...</div>}
+                                                                    {analysis && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{analysis.suggestions}</p>}
+                                                                </CardContent>
+                                                              </Card>
+                                                            </div>
+                                                        )}
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 ) : (
                     <div className="text-center py-12 text-muted-foreground">
                         <p>No feedback has been submitted yet.</p>
