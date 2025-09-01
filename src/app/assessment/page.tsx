@@ -29,7 +29,7 @@ export default function AssessmentPage() {
   const [assessments, setAssessments] = useState(initialAssessments);
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeAssessment, setActiveAssessment] = useState<string | null>(null);
   const { user } = useAuth();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,8 +60,7 @@ export default function AssessmentPage() {
     setSubmissions(prev => [...prev, newSubmission]);
 
     setSelectedFile(null);
-    setIsDialogOpen(false); // Close the dialog
-    // In a real application, you would upload the file to a server/database here.
+    setActiveAssessment(null);
   };
 
   const handleDownload = (file: File) => {
@@ -100,9 +99,9 @@ export default function AssessmentPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                 <Dialog open={isDialogOpen} onOpenChange={(open) => { setSelectedFile(null); setIsDialogOpen(open); }}>
+                 <Dialog open={activeAssessment === assessment.title} onOpenChange={(open) => { if (!open) { setActiveAssessment(null); setSelectedFile(null); } }}>
                    <DialogTrigger asChild>
-                      <Button className="w-full" disabled={assessment.status === 'Submitted'} onClick={() => setIsDialogOpen(true)}>
+                      <Button className="w-full" disabled={assessment.status === 'Submitted'} onClick={() => setActiveAssessment(assessment.title)}>
                         <Upload className="mr-2 h-4 w-4" />
                         {assessment.status === 'Submitted' ? 'Submitted' : 'Submit Now'}
                       </Button>
