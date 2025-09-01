@@ -86,7 +86,7 @@ export function MemoryGame() {
   }, [flippedIndices, cards]);
 
   const handleCardClick = (index: number) => {
-    if (isChecking || flippedIndices.length >= 2 || cards[index].isFlipped) {
+    if (isChecking || flippedIndices.length >= 2 || cards[index].isFlipped || cards[index].isMatched) {
       return;
     }
     
@@ -104,24 +104,22 @@ export function MemoryGame() {
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="grid grid-cols-4 gap-4">
-        {cards.map((card, index) => (
-          <Card
-            key={index}
-            onClick={() => handleCardClick(index)}
-            className={cn(
-              "h-20 w-20 md:h-24 md:w-24 flex items-center justify-center cursor-pointer transition-transform duration-500 transform-style-3d",
-              card.isFlipped || card.isMatched ? "rotate-y-180" : "",
-              card.isMatched ? "border-green-500" : "border-border"
-            )}
-          >
-            <div className="absolute w-full h-full backface-hidden flex items-center justify-center bg-secondary rounded-lg">
-               {/* This is the back of the card */}
-            </div>
-            <div className="rotate-y-180 backface-hidden w-full h-full flex items-center justify-center rounded-lg bg-card">
-                <card.icon className="h-10 w-10 text-primary" />
-            </div>
-          </Card>
-        ))}
+        {cards.map((card, index) => {
+          const Icon = card.icon;
+          return (
+            <Card
+              key={index}
+              onClick={() => handleCardClick(index)}
+              className={cn(
+                "h-20 w-20 md:h-24 md:w-24 flex items-center justify-center cursor-pointer transition-colors",
+                card.isFlipped || card.isMatched ? "bg-card" : "bg-secondary",
+                card.isMatched ? "border-green-500" : "border-border"
+              )}
+            >
+              {(card.isFlipped || card.isMatched) && <Icon className="h-10 w-10 text-primary" />}
+            </Card>
+          );
+        })}
       </div>
       {isGameWon ? (
         <Card className="p-6 text-center bg-green-100 dark:bg-green-900/50 border-green-500 animate-in fade-in zoom-in-95">
@@ -133,11 +131,6 @@ export function MemoryGame() {
          <div className="text-lg font-semibold">Moves: {moves}</div>
       )}
       <Button onClick={initializeGame}>Reset Game</Button>
-      <style jsx>{`
-        .transform-style-3d { transform-style: preserve-3d; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        .backface-hidden { backface-visibility: hidden; }
-      `}</style>
     </div>
   );
 }

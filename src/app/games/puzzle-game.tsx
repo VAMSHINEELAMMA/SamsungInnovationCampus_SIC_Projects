@@ -73,7 +73,7 @@ export function PuzzleGame() {
           <Button onClick={handleGuess} aria-label="Submit guess">Guess</Button>
         </div>
         {message.text && (
-            <div className={`mt-4 flex items-center justify-center gap-2 p-3 rounded-md text-sm animate-in fade-in ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mt-4 flex items-center justify-center gap-2 p-3 rounded-md text-sm animate-in fade-in ${message.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
                 {message.type === 'success' ? <CheckCircle className="h-5 w-5"/> : <AlertCircle className="h-5 w-5"/>}
                 {message.text}
             </div>
