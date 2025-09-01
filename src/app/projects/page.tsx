@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Linkedin } from "lucide-react";
+import { Upload, Linkedin, Github, Download, FileArchive } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,7 +19,8 @@ const initialProjects = [
     description: "A full-stack e-commerce platform built with Next.js, Stripe, and PostgreSQL.",
     imageUrl: "https://picsum.photos/600/400?random=1",
     linkedinUrl: "https://linkedin.com/in/user",
-    projectFile: null as File | null,
+    githubUrl: "https://github.com/user",
+    projectFile: new File(["dummy zip"], "ecommerce.zip", { type: "application/zip" }),
     dataAiHint: 'ecommerce website'
   },
   {
@@ -27,6 +28,7 @@ const initialProjects = [
     description: "An analytics dashboard for visualizing sales data using D3.js and React.",
     imageUrl: "https://picsum.photos/600/400?random=2",
     linkedinUrl: "https://linkedin.com/in/user",
+    githubUrl: "https://github.com/user",
     projectFile: null as File | null,
     dataAiHint: 'data dashboard'
   },
@@ -35,7 +37,8 @@ const initialProjects = [
     description: "A cross-platform mobile app developed with React Native to track workouts and nutrition.",
     imageUrl: "https://picsum.photos/600/400?random=3",
     linkedinUrl: "https://linkedin.com/in/user",
-    projectFile: null as File | null,
+    githubUrl: "https://github.com/user",
+    projectFile: new File(["dummy zip"], "fitness_app.zip", { type: "application/zip" }),
     dataAiHint: 'fitness app'
   },
   {
@@ -43,6 +46,7 @@ const initialProjects = [
     description: "A Python-based model to predict stock market trends using historical data.",
     imageUrl: "https://picsum.photos/600/400?random=4",
     linkedinUrl: "https://linkedin.com/in/user",
+    githubUrl: "https://github.com/user",
     projectFile: null as File | null,
     dataAiHint: 'machine learning'
   },
@@ -52,12 +56,14 @@ type Project = typeof initialProjects[0];
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
     imageUrl: "",
     linkedinUrl: "",
+    githubUrl: "",
     projectFile: null as File | null
   });
 
@@ -71,6 +77,17 @@ export default function ProjectsPage() {
       setNewProject(prev => ({ ...prev, projectFile: e.target.files?.[0] || null }));
     }
   };
+  
+  const handleDownload = (file: File) => {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,12 +97,13 @@ export default function ProjectsPage() {
     }
     const projectToAdd: Project = { ...newProject, dataAiHint: 'custom project' };
     setProjects(prev => [projectToAdd, ...prev]);
-    setIsDialogOpen(false);
+    setIsUploadDialogOpen(false);
     setNewProject({
         title: "",
         description: "",
         imageUrl: "",
         linkedinUrl: "",
+        githubUrl: "",
         projectFile: null
     });
   };
@@ -94,7 +112,7 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Upload className="mr-2 h-4 w-4" />
@@ -125,6 +143,10 @@ export default function ProjectsPage() {
                  <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="linkedinUrl" className="text-right">LinkedIn URL</Label>
                   <Input id="linkedinUrl" value={newProject.linkedinUrl} onChange={handleInputChange} className="col-span-3" placeholder="https://linkedin.com/in/your-profile" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="githubUrl" className="text-right">GitHub URL</Label>
+                  <Input id="githubUrl" value={newProject.githubUrl} onChange={handleInputChange} className="col-span-3" placeholder="https://github.com/your-repo" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="projectFile" className="text-right">Project File</Label>
@@ -158,15 +180,50 @@ export default function ProjectsPage() {
               <CardDescription className="mt-2 flex-grow">{project.description}</CardDescription>
             </div>
             <CardFooter className="flex flex-col sm:flex-row gap-2">
-              <Button variant="outline" className="w-full">View Details</Button>
-               {project.linkedinUrl && (
-                <Button asChild variant="secondary" className="w-full">
-                    <Link href={project.linkedinUrl} target="_blank">
-                        <Linkedin className="mr-2 h-4 w-4" />
-                        LinkedIn
-                    </Link>
-                </Button>
-              )}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full">View Details</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <div className="relative h-60 w-full rounded-lg overflow-hidden mb-4">
+                            <Image
+                              src={project.imageUrl}
+                              alt={project.title}
+                              layout="fill"
+                              objectFit="cover"
+                              data-ai-hint={project.dataAiHint}
+                            />
+                        </div>
+                        <DialogTitle className="text-2xl">{project.title}</DialogTitle>
+                        <DialogDescription>{project.description}</DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                       {project.projectFile && (
+                          <Button onClick={() => handleDownload(project.projectFile!)} className="w-full">
+                              <Download className="mr-2 h-4 w-4" />
+                              Download Project
+                          </Button>
+                        )}
+                        {project.githubUrl && (
+                            <Button asChild variant="secondary" className="w-full">
+                                <Link href={project.githubUrl} target="_blank">
+                                    <Github className="mr-2 h-4 w-4" />
+                                    GitHub
+                                </Link>
+                            </Button>
+                        )}
+                        {project.linkedinUrl && (
+                          <Button asChild variant="secondary" className="w-full">
+                              <Link href={project.linkedinUrl} target="_blank">
+                                  <Linkedin className="mr-2 h-4 w-4" />
+                                  LinkedIn
+                              </Link>
+                          </Button>
+                        )}
+                    </div>
+                </DialogContent>
+              </Dialog>
             </CardFooter>
           </Card>
         ))}
