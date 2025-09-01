@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useAuth } from "@/hooks/use-auth";
 
 
 const initialAssessments = [
@@ -18,16 +19,17 @@ const initialAssessments = [
   { title: "React Components Lab", subject: "Computer Science", dueDate: "2024-08-12", status: "Not Submitted", file: null as File | null },
 ];
 
-const submissions = [
-    { student: "Alice Johnson", assessment: "World War II Essay", date: "2024-08-09" },
-    { student: "Bob Williams", assessment: "Calculus Midterm", date: "2024-08-14" },
-    { student: "Charlie Brown", assessment: "React Components Lab", date: "2024-08-11" },
+const initialSubmissions = [
+    { student: "Alice Johnson", assessment: "World War II Essay", date: "2024-08-09", file: new File([], "history_essay.pdf") },
+    { student: "Bob Williams", assessment: "Calculus Midterm", date: "2024-08-14", file: new File([], "calculus_midterm.pdf") },
 ];
 
 
 export default function AssessmentPage() {
   const [assessments, setAssessments] = useState(initialAssessments);
+  const [submissions, setSubmissions] = useState(initialSubmissions);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { user } = useAuth();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -36,8 +38,9 @@ export default function AssessmentPage() {
   };
 
   const handleSubmit = (assessmentTitle: string) => {
-    if (!selectedFile) return;
+    if (!selectedFile || !user) return;
 
+    // Update assessment status for the student
     setAssessments(prev =>
       prev.map(assessment =>
         assessment.title === assessmentTitle
@@ -45,8 +48,29 @@ export default function AssessmentPage() {
           : assessment
       )
     );
+
+    // Add to submissions list for faculty view
+    const newSubmission = {
+        student: user.fullName,
+        assessment: assessmentTitle,
+        date: new Date().toISOString().split('T')[0],
+        file: selectedFile
+    };
+    setSubmissions(prev => [...prev, newSubmission]);
+
     setSelectedFile(null);
-    // Here you would typically handle the file upload to a server
+    // In a real application, you would upload the file to a server/database here.
+  };
+
+  const handleDownload = (file: File) => {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -74,7 +98,7 @@ export default function AssessmentPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                 <Dialog>
+                 <Dialog onOpenChange={() => setSelectedFile(null)}>
                    <DialogTrigger asChild>
                       <Button className="w-full" disabled={assessment.status === 'Submitted'}>
                         <Upload className="mr-2 h-4 w-4" />
@@ -157,7 +181,7 @@ export default function AssessmentPage() {
                             <TableCell className="font-medium">{submission.student}</TableCell>
                             <TableCell>{submission.assessment}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" onClick={() => handleDownload(submission.file)}>
                                 <Download className="mr-2 h-4 w-4" />
                                 View
                               </Button>
