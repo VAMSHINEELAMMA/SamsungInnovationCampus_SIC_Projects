@@ -14,14 +14,15 @@ import { useAuth } from "@/hooks/use-auth";
 
 
 const initialAssessments = [
-  { title: "Calculus Midterm", subject: "Mathematics", dueDate: "2024-08-15", status: "Not Submitted", file: null as File | null },
-  { title: "World War II Essay", subject: "History", dueDate: "2024-08-10", status: "Submitted", file: new File([], "history_essay.pdf") },
-  { title: "React Components Lab", subject: "Computer Science", dueDate: "2024-08-12", status: "Not Submitted", file: null as File | null },
+  { title: "Calculus Midterm", subject: "Mathematics", dueDate: "2024-08-15", status: "Not Submitted", file: null as File | null, score: null },
+  { title: "World War II Essay", subject: "History", dueDate: "2024-08-10", status: "Submitted", file: new File([], "history_essay.pdf"), score: 88 },
+  { title: "React Components Lab", subject: "Computer Science", dueDate: "2024-08-12", status: "Submitted", file: new File([], "react-lab.pdf"), score: 92 },
 ];
 
 const initialSubmissions = [
     { student: "Alice Johnson", assessment: "World War II Essay", date: "2024-08-09", file: new File([], "history_essay.pdf") },
     { student: "Bob Williams", assessment: "Calculus Midterm", date: "2024-08-14", file: new File([], "calculus_midterm.pdf") },
+    { student: "Alice Johnson", assessment: "React Components Lab", date: "2024-08-11", file: new File([], "react-lab.pdf") },
 ];
 
 
@@ -97,6 +98,11 @@ export default function AssessmentPage() {
                   {assessment.status === 'Submitted' ? <CheckCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                   <span>{assessment.status}</span>
                 </div>
+                 {assessment.score && (
+                  <div className="flex items-center gap-2 text-sm text-primary font-semibold">
+                    <span>Score: {assessment.score}/100</span>
+                  </div>
+                )}
               </CardContent>
               <CardFooter>
                  <Dialog open={activeAssessment === assessment.title} onOpenChange={(open) => { if (!open) { setActiveAssessment(null); setSelectedFile(null); } }}>

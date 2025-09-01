@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,6 +12,21 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Sparkles, Lightbulb, TrendingUp } from "lucide-react";
+
+// Mock data fetching, in a real app this would come from an API or a global state
+const getAverageScores = () => {
+    // These would be fetched based on the logged-in user
+    const mockAssessmentScores = [88, 92]; // From submitted assessments
+    const mockProjectScores = [85, 95, 90]; // Assuming some project scores exist
+
+    const average = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 80;
+    
+    return {
+        assessmentScore: average(mockAssessmentScores),
+        projectScore: average(mockProjectScores),
+    };
+};
+
 
 const formSchema = z.object({
   assessmentScore: z.number().min(0).max(100),
@@ -28,8 +44,8 @@ interface PerformanceFormProps {
 export function PerformanceForm({ predictStudentPerformance }: PerformanceFormProps) {
   const [prediction, setPrediction] = useState<PredictStudentPerformanceOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { control, handleSubmit, watch } = useForm<FormValues>({
+  
+  const { control, handleSubmit, watch, reset } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       assessmentScore: 80,
@@ -38,6 +54,17 @@ export function PerformanceForm({ predictStudentPerformance }: PerformanceFormPr
       efficiency: 85,
     },
   });
+
+  useEffect(() => {
+    const avgScores = getAverageScores();
+    reset({
+        assessmentScore: Math.round(avgScores.assessmentScore),
+        projectScore: Math.round(avgScores.projectScore),
+        feedbackScore: 90, // Keep feedback and efficiency as adjustable params
+        efficiency: 85,
+    });
+  }, [reset]);
+
 
   const formValues = watch();
 
