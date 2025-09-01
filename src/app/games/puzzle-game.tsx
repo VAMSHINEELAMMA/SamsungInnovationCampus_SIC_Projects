@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
 const words = ["EDUCATION", "KNOWLEDGE", "LEARNING", "ASSESSMENT", "PERFORMANCE", "FEEDBACK", "PROJECT", "STUDENT", "TEACHER"];
 
@@ -48,9 +48,26 @@ export function PuzzleGame() {
     }
   };
 
+  const showAnswer = () => {
+    setMessage({ text: `The answer is: ${currentWord}`, type: "info" });
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
         handleGuess();
+    }
+  }
+  
+  const getMessageStyling = () => {
+    switch (message.type) {
+        case 'success':
+            return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+        case 'error':
+            return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+        case 'info':
+            return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+        default:
+            return '';
     }
   }
 
@@ -73,15 +90,23 @@ export function PuzzleGame() {
           <Button onClick={handleGuess} aria-label="Submit guess">Guess</Button>
         </div>
         {message.text && (
-            <div className={`mt-4 flex items-center justify-center gap-2 p-3 rounded-md text-sm animate-in fade-in ${message.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
-                {message.type === 'success' ? <CheckCircle className="h-5 w-5"/> : <AlertCircle className="h-5 w-5"/>}
+            <div className={`mt-4 flex items-center justify-center gap-2 p-3 rounded-md text-sm animate-in fade-in ${getMessageStyling()}`}>
+                {message.type === 'success' && <CheckCircle className="h-5 w-5"/>}
+                {message.type === 'error' && <AlertCircle className="h-5 w-5"/>}
+                {message.type === 'info' && <Info className="h-5 w-5"/>}
                 {message.text}
             </div>
         )}
-        <Button variant="link" onClick={generateNewPuzzle} className="mt-4">
-          New Word
-        </Button>
+        <div className="mt-4 flex justify-center gap-4">
+            <Button variant="link" onClick={generateNewPuzzle}>
+              New Word
+            </Button>
+             <Button variant="link" onClick={showAnswer}>
+              Show Answer
+            </Button>
+        </div>
       </CardContent>
     </Card>
   );
 }
+
