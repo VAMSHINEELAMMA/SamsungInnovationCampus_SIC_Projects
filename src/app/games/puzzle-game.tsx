@@ -1,21 +1,24 @@
+
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
-const words = ["EDUCATION", "KNOWLEDGE", "LEARNING", "ASSESSMENT", "PERFORMANCE", "FEEDBACK", "PROJECT"];
+const words = ["EDUCATION", "KNOWLEDGE", "LEARNING", "ASSESSMENT", "PERFORMANCE", "FEEDBACK", "PROJECT", "STUDENT", "TEACHER"];
 
-const scrambleWord = (word: string) => {
+const scrambleWord = (word: string): string => {
   const a = word.split("");
   const n = a.length;
   for (let i = n - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
-  return a.join("");
+  const scrambled = a.join("");
+  // Ensure the scrambled word is not the same as the original
+  return scrambled === word ? scrambleWord(word) : scrambled;
 };
 
 export function PuzzleGame() {
@@ -24,23 +27,20 @@ export function PuzzleGame() {
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  const generateNewPuzzle = () => {
+  const generateNewPuzzle = useCallback(() => {
     const newWord = words[Math.floor(Math.random() * words.length)];
     setCurrentWord(newWord);
-    let newScrambled = scrambleWord(newWord);
-    while (newScrambled === newWord) {
-        newScrambled = scrambleWord(newWord);
-    }
-    setScrambledWord(newScrambled);
+    setScrambledWord(scrambleWord(newWord));
     setGuess("");
     setMessage({ text: "", type: "" });
-  };
+  }, []);
   
   useEffect(() => {
     generateNewPuzzle();
-  }, []);
+  }, [generateNewPuzzle]);
 
   const handleGuess = () => {
+    if (!guess) return;
     if (guess.toUpperCase() === currentWord) {
       setMessage({ text: "Correct! Well done!", type: "success" });
     } else {
@@ -68,11 +68,12 @@ export function PuzzleGame() {
             onChange={(e) => setGuess(e.target.value)}
             onKeyPress={handleKeyPress}
             className="text-lg text-center"
+            aria-label="Word guess input"
           />
-          <Button onClick={handleGuess}>Guess</Button>
+          <Button onClick={handleGuess} aria-label="Submit guess">Guess</Button>
         </div>
         {message.text && (
-            <div className={`mt-4 flex items-center justify-center gap-2 p-3 rounded-md text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mt-4 flex items-center justify-center gap-2 p-3 rounded-md text-sm animate-in fade-in ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                 {message.type === 'success' ? <CheckCircle className="h-5 w-5"/> : <AlertCircle className="h-5 w-5"/>}
                 {message.text}
             </div>

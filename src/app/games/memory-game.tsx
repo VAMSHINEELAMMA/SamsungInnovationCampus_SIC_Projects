@@ -1,11 +1,12 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  Brain, Code, FlaskConical, Globe, Palette, Mic, BookOpen, Atom, Award, Bot
+  Brain, Code, FlaskConical, Globe, Palette, Mic, BookOpen, Atom, Award
 } from "lucide-react";
 
 const icons = [
@@ -20,18 +21,22 @@ type CardState = {
 };
 
 const shuffleArray = (array: any[]) => {
-  return array.sort(() => Math.random() - 0.5);
+  return array
+    .map(value => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
 };
 
 export function MemoryGame() {
   const [cards, setCards] = useState<CardState[]>([]);
   const [flippedIndices, setFlippedIndices] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
+  const [isChecking, setIsChecking] = useState(false);
 
-  const initializeGame = () => {
+  const initializeGame = useCallback(() => {
     const shuffledIcons = shuffleArray(allIcons);
     setCards(
-      shuffledIcons.map((Icon, index) => ({
+      shuffledIcons.map((Icon) => ({
         icon: Icon,
         isFlipped: false,
         isMatched: false,
@@ -39,47 +44,59 @@ export function MemoryGame() {
     );
     setFlippedIndices([]);
     setMoves(0);
-  };
-
-  useEffect(() => {
-    initializeGame();
+    setIsChecking(false);
   }, []);
 
   useEffect(() => {
+    initializeGame();
+  }, [initializeGame]);
+
+  useEffect(() => {
     if (flippedIndices.length === 2) {
+      setIsChecking(true);
       const [firstIndex, secondIndex] = flippedIndices;
       const firstCard = cards[firstIndex];
       const secondCard = cards[secondIndex];
 
       if (firstCard.icon === secondCard.icon) {
         // Match
-        const newCards = [...cards];
-        newCards[firstIndex].isMatched = true;
-        newCards[secondIndex].isMatched = true;
-        setCards(newCards);
+        setCards(prevCards => {
+            const newCards = [...prevCards];
+            newCards[firstIndex].isMatched = true;
+            newCards[secondIndex].isMatched = true;
+            return newCards;
+        });
         setFlippedIndices([]);
+        setIsChecking(false);
       } else {
         // No match
         setTimeout(() => {
-          const newCards = [...cards];
-          newCards[firstIndex].isFlipped = false;
-          newCards[secondIndex].isFlipped = false;
-          setCards(newCards);
+          setCards(prevCards => {
+            const newCards = [...prevCards];
+            newCards[firstIndex].isFlipped = false;
+            newCards[secondIndex].isFlipped = false;
+            return newCards;
+          });
           setFlippedIndices([]);
+          setIsChecking(false);
         }, 1000);
       }
-      setMoves(moves + 1);
+      setMoves(m => m + 1);
     }
-  }, [flippedIndices, cards, moves]);
+  }, [flippedIndices, cards]);
 
   const handleCardClick = (index: number) => {
-    if (flippedIndices.length >= 2 || cards[index].isFlipped) {
+    if (isChecking || flippedIndices.length >= 2 || cards[index].isFlipped) {
       return;
     }
-    const newCards = [...cards];
-    newCards[index].isFlipped = true;
-    setCards(newCards);
-    setFlippedIndices([...flippedIndices, index]);
+    
+    setCards(prevCards => {
+        const newCards = [...prevCards];
+        newCards[index].isFlipped = true;
+        return newCards;
+    });
+
+    setFlippedIndices(prev => [...prev, index]);
   };
   
   const isGameWon = cards.length > 0 && cards.every(c => c.isMatched);
@@ -94,20 +111,20 @@ export function MemoryGame() {
             className={cn(
               "h-20 w-20 md:h-24 md:w-24 flex items-center justify-center cursor-pointer transition-transform duration-500 transform-style-3d",
               card.isFlipped || card.isMatched ? "rotate-y-180" : "",
-              card.isMatched ? "border-green-500" : ""
+              card.isMatched ? "border-green-500" : "border-border"
             )}
           >
-            <div className="absolute backface-hidden">
-                <div className="h-full w-full bg-secondary rounded-lg" />
+            <div className="absolute w-full h-full backface-hidden flex items-center justify-center bg-secondary rounded-lg">
+               {/* This is the back of the card */}
             </div>
-            <div className="rotate-y-180 backface-hidden">
+            <div className="rotate-y-180 backface-hidden w-full h-full flex items-center justify-center rounded-lg bg-card">
                 <card.icon className="h-10 w-10 text-primary" />
             </div>
           </Card>
         ))}
       </div>
       {isGameWon ? (
-        <Card className="p-6 text-center bg-green-100 dark:bg-green-900/50 border-green-500">
+        <Card className="p-6 text-center bg-green-100 dark:bg-green-900/50 border-green-500 animate-in fade-in zoom-in-95">
           <Award className="h-12 w-12 text-green-500 mx-auto mb-4"/>
           <h3 className="text-xl font-bold">You Won!</h3>
           <p className="text-muted-foreground">You completed the game in {moves} moves.</p>
