@@ -109,15 +109,15 @@ export default function ConnectPage() {
       </div>
 
       <Dialog open={!!chattingWith} onOpenChange={(open) => { if (!open) setChattingWith(null); }}>
-        <DialogContent className="sm:max-w-[425px] flex flex-col h-[600px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[425px] flex flex-col h-[600px] p-0">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Chat with {chattingWith?.name}</DialogTitle>
             <DialogDescription>
               Ask any questions you have about {chattingWith?.subject}.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-grow my-4 pr-4 -mr-2">
-             <div className="space-y-4">
+          <ScrollArea className="flex-grow my-0 px-6">
+             <div className="space-y-4 py-4">
                 {(messages[chattingWith?.name || ''] || []).map((msg, index) => (
                    <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {msg.sender === 'faculty' && <Avatar className="h-8 w-8"><AvatarImage src={chattingWith?.avatar} /><AvatarFallback>{chattingWith?.name.charAt(0)}</AvatarFallback></Avatar>}
@@ -130,7 +130,7 @@ export default function ConnectPage() {
                 ))}
              </div>
           </ScrollArea>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 p-6 pt-2">
             <Input
               placeholder="Type your message..."
               value={currentMessage}
