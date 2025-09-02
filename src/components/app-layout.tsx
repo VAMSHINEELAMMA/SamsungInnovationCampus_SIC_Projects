@@ -85,7 +85,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="https://picsum.photos/100" alt="User" data-ai-hint="user avatar" />
-                  <AvatarFallback>{user?.fullName?.[0] || 'U'}</AvatarFallback>
+                  <AvatarFallback>{user?.fullName?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
