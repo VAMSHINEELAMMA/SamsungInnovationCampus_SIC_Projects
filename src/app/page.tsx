@@ -1,7 +1,8 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, BarChart2, FolderKanban, MessageSquareHeart, Cpu, Puzzle, Users, Rocket } from 'lucide-react';
+import { GraduationCap, BarChart2, FolderKanban, Cpu, Puzzle, Users, Rocket } from 'lucide-react';
 import Image from 'next/image';
 
 const features = [
