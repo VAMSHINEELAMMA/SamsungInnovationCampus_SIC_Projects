@@ -58,7 +58,7 @@ export default function ConnectPage() {
     // Simulate faculty reply
     setTimeout(() => {
       const reply: Message = {
-        text: `Hello! Thanks for reaching out. I'll get back to you about "${currentMessage}" shortly.`,
+        text: `Thank you for your message. I have received it and will get back to you as soon as possible.`,
         sender: 'faculty',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
