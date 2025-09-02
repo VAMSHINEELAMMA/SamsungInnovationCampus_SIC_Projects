@@ -11,6 +11,7 @@ import { navItems } from "@/lib/constants";
 
 const appRoutes = navItems.map(item => item.href);
 const authRoutes = ["/login", "/signup"];
+const publicRoutes = ["/"]; // Landing page
 
 function InnerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,12 +19,19 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && appRoutes.includes(pathname)) {
+    if (isLoading) return; // Don't do anything while loading
+
+    const isAppRoute = appRoutes.some(route => pathname.startsWith(route));
+    const isAuthRoute = authRoutes.includes(pathname);
+
+    if (!isAuthenticated && isAppRoute) {
+      // If user is not authenticated and trying to access a protected app route
       router.push("/login");
-    }
-    if (!isLoading && isAuthenticated && authRoutes.includes(pathname)) {
+    } else if (isAuthenticated && isAuthRoute) {
+      // If user is authenticated and trying to access login/signup
       router.push("/dashboard");
     }
+
   }, [isAuthenticated, pathname, router, isLoading]);
 
   if (isLoading) {
@@ -37,8 +45,9 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
 
   const isAppRoute = appRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.includes(pathname);
+  const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (isAppRoute) {
+  if (isAppRoute && isAuthenticated) {
     return (
       <AppLayout>
         {children}
@@ -47,7 +56,7 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isAuthRoute) {
+  if (isAuthRoute && !isAuthenticated) {
     return (
       <AuthLayout>
         {children}
@@ -55,15 +64,24 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
       </AuthLayout>
     );
   }
+  
+  if (isPublicRoute) {
+     return <>
+      {children}
+      <Toaster />
+     </>;
+  }
 
-  return <>
-    {children}
-    <Toaster />
-  </>;
+  // Fallback for scenarios like loading or initial render before redirect kicks in
+  return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <p>Loading...</p>
+      </div>
+  );
 }
 
 
-export function LayoutProvider({ children }: { children: React.ReactNode }) {
+export function LayoutProvider({ children }: { children: React.Node }) {
   return (
     <AuthProvider>
       <InnerLayout>{children}</InnerLayout>
