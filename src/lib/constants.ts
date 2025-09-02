@@ -9,6 +9,7 @@ import {
   LogOut,
   type LucideIcon,
   LifeBuoy,
+  BookText,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -43,6 +44,11 @@ export const navItems: NavItem[] = [
     title: 'Calculator',
     href: '/calculator',
     icon: Calculator,
+  },
+  {
+    title: 'Summarizer',
+    href: '/summarizer',
+    icon: BookText,
   },
   {
     title: 'Games',

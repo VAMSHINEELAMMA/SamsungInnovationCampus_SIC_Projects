@@ -1,0 +1,67 @@
+'use server';
+
+/**
+ * @fileOverview This file defines a Genkit flow for summarizing text content into key points.
+ *
+ * - summarizeContent - A function that takes a block of text and returns key points.
+ * - SummarizeContentInput - The input type for the summarizeContent function.
+ * - SummarizeContentOutput - The return type for the summarizeContent function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const SummarizeContentInputSchema = z.object({
+  content: z.string().describe('The text content to be summarized.'),
+});
+export type SummarizeContentInput = z.infer<
+  typeof SummarizeContentInputSchema
+>;
+
+const SummarizeContentOutputSchema = z.object({
+  keyPoints: z
+    .string()
+    .describe(
+      'The key points of the content, formatted as a bulleted or numbered list.'
+    ),
+});
+export type SummarizeContentOutput = z.infer<
+  typeof SummarizeContentOutputSchema
+>;
+
+export async function summarizeContent(
+  input: SummarizeContentInput
+): Promise<SummarizeContentOutput> {
+  return summarizeContentFlow(input);
+}
+
+const prompt = ai.definePrompt({
+  name: 'summarizeContentPrompt',
+  input: {schema: SummarizeContentInputSchema},
+  output: {schema: SummarizeContentOutputSchema},
+  prompt: `You are an expert at summarizing complex topics.
+  Analyze the following content and extract the most important key points.
+  Present the key points as a concise, easy-to-read bulleted list.
+
+  Content to summarize:
+  ---
+  {{content}}
+  ---
+
+  Output the key points in the specified JSON format.`,
+});
+
+const summarizeContentFlow = ai.defineFlow(
+  {
+    name: 'summarizeContentFlow',
+    inputSchema: SummarizeContentInputSchema,
+    outputSchema: SummarizeContentOutputSchema,
+  },
+  async input => {
+    if (!input.content.trim()) {
+        return { keyPoints: "Please provide some content to summarize." };
+    }
+    const {output} = await prompt(input);
+    return output!;
+  }
+);
