@@ -33,9 +33,9 @@ export default function SignupPage() {
       signup({ fullName, email, password });
       toast({
         title: "Account Created",
-        description: "Your account has been created successfully. Please login.",
+        description: "Welcome! You have been logged in.",
       });
-      router.push("/login");
+      router.push("/dashboard");
     } catch (error: any) {
         toast({
             variant: "destructive",

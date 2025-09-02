@@ -36,8 +36,13 @@ export const signup = ({ fullName, email, password }: UserWithPassword) => {
     throw new Error("User with this email already exists.");
   }
 
-  users.push({ fullName, email, password });
+  const newUser = { fullName, email, password };
+  users.push(newUser);
   setLocalStorage(USERS_KEY, users);
+  
+  // Automatically log in the user after signup
+  const { password: _, ...userWithoutPassword } = newUser;
+  setLocalStorage(CURRENT_USER_KEY, userWithoutPassword);
 };
 
 export const login = (email: string, password: string): User => {
