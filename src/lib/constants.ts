@@ -8,6 +8,7 @@ import {
   Users,
   LogOut,
   type LucideIcon,
+  LifeBuoy,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -53,4 +54,9 @@ export const navItems: NavItem[] = [
     href: '/connect',
     icon: Users,
   },
+  {
+    title: 'Help',
+    href: '/help',
+    icon: LifeBuoy,
+  }
 ];

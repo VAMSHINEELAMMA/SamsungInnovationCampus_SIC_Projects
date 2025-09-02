@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 import { navItems } from "@/lib/constants";
 
-const appRoutes = navItems.map(item => item.href);
+const appRoutes = [...navItems.map(item => item.href), "/help"];
 const authRoutes = ["/login", "/signup"];
 const publicRoutes = ["/"]; // Landing page
 
@@ -47,22 +47,38 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   const isAuthRoute = authRoutes.includes(pathname);
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (isAppRoute && isAuthenticated) {
-    return (
-      <AppLayout>
-        {children}
-        <Toaster />
-      </AppLayout>
-    );
+  if (isAppRoute) {
+     if(isAuthenticated) {
+        return (
+          <AppLayout>
+            {children}
+            <Toaster />
+          </AppLayout>
+        );
+     }
+     // Show loading or redirect to login while auth state is being confirmed
+     return (
+        <div className="flex h-screen w-screen items-center justify-center">
+            <p>Loading...</p>
+        </div>
+     )
   }
 
-  if (isAuthRoute && !isAuthenticated) {
-    return (
-      <AuthLayout>
-        {children}
-        <Toaster />
-      </AuthLayout>
-    );
+  if (isAuthRoute) {
+    if(!isAuthenticated) {
+        return (
+          <AuthLayout>
+            {children}
+            <Toaster />
+          </AuthLayout>
+        );
+    }
+     // If authenticated, redirect away from auth routes
+     return (
+        <div className="flex h-screen w-screen items-center justify-center">
+            <p>Loading...</p>
+        </div>
+     )
   }
   
   if (isPublicRoute) {
@@ -81,7 +97,7 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
 }
 
 
-export function LayoutProvider({ children }: { children: React.Node }) {
+export function LayoutProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
       <InnerLayout>{children}</InnerLayout>
