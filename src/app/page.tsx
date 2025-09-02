@@ -107,7 +107,7 @@ export default function LandingPage() {
                     </Button>
                 </div>
                 <div className="relative h-80 rounded-lg overflow-hidden shadow-2xl">
-                    <Image src="https://picsum.photos/600/400" alt="Collaboration" layout="fill" objectFit="cover" data-ai-hint="collaboration teamwork"/>
+                    <Image src="https://picsum.photos/600/400" alt="Collaboration" fill className="object-cover" data-ai-hint="collaboration teamwork"/>
                 </div>
             </div>
         </section>
