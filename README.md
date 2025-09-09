@@ -1,5 +1,5 @@
-**🎓 Student Performance Prediction App**
-** 1. Objective of the Project**
+🎓 Student Performance Prediction App
+ 1. Objective of the Project
 
 The objective of this project is to predict a student's academic performance based on multiple factors such as study habits, attendance, past scores, and extracurricular activities.
 This app helps educators, parents, and institutions to:
@@ -14,7 +14,7 @@ Real-World Problem Solved
 
 Many students underperform because their weaknesses are identified too late. This solution predicts a student's Performance Index (numerical score) and Performance Category (Low, Medium, High) so that timely interventions can be made.
 
-** 2. Data Source**
+ 2. Data Source
 
 Source: The dataset used for this project was prepared for demonstration purposes, based on student academic performance features inspired by real educational data.
 
@@ -40,7 +40,7 @@ Performance Index: Final performance score (Target for Regression)
 
 Performance Category: Derived category (Low, Medium, High)
 
- **3. Methodologies Used**
+ 3. Methodologies Used
 
 The project follows these steps:
 
@@ -64,7 +64,7 @@ Confusion Matrix for classification models.
 
 Performance Metrics comparison.
 
-** 4. AI/ML Models Used**
+4. AI/ML Models Used
 
 We used a combination of Regression and Classification models:
 
@@ -82,7 +82,7 @@ Random Forest Classifier – For better accuracy.
 
 Gradient Boosting Classifier – For robust and improved performance.
 
-** 5. Predictions and Findings**
+5. Predictions and Findings
 
 Predicted Performance Index: The app predicts the numerical performance score using Linear Regression and Random Forest, and provides an average prediction.
 
@@ -96,15 +96,15 @@ Students with high attendance and balanced sleep perform significantly better.
 
 Participation in extracurricular activities has a moderate positive impact on performance.
 
-** Features of the App**
+Features of the App
 
-✔ Predict student’s Performance Index
-✔ Predict Performance Category (Low, Medium, High)
-✔ Generate AI-Based Report with Strengths & Areas of Improvement
-✔ Visualize Model Performance Metrics
-✔ Downloadable Student Report
+ Predict student’s Performance Index
+ Predict Performance Category (Low, Medium, High)
+ Generate AI-Based Report with Strengths & Areas of Improvement
+ Visualize Model Performance Metrics
+ Downloadable Student Report
 
-** How to Run the App**
+How to Run the App
 
 Install dependencies:
 
@@ -118,7 +118,7 @@ streamlit run app.py
 
 Upload the dataset (or use the provided student_performance_with_unique_names.csv) in the same folder.
 
- **Future Enhancements**
+ Future Enhancements
 
 Include more real-world features like family background, social media usage, etc.
 
